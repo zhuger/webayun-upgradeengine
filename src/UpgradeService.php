@@ -21,6 +21,7 @@ use webayun\upgradeengine\Core\Net\Net;
 use webayun\upgradeengine\Core\Log\Log;
 
 session_start();
+
 class UpgradeService
 {
 
