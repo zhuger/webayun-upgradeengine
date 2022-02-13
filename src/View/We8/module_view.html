@@ -1,0 +1,426 @@
+{template 'common/header'}
+{templates 'headers'}
+<style type="text/css">
+	body {
+		position: relative;
+		overflow-x: hidden;
+	}
+	.main-table {
+
+	}
+	.upgrade-layer-mask {
+		position: fixed;
+		width: 100%;
+		height: 100%;
+		top: 0;
+		left: 0;
+		background-color: #000;
+		opacity: 0.5;
+		filter: alpha(opacity=50);
+	}
+	.upgrade-layer {
+		position: fixed;
+		width: 100%;
+		height: 100%;
+		top: 40%;
+		left: 50%;
+		width: 360px;
+		height: 120px;
+		margin: -60px 0 0 -180px;
+		background-color: #fff;
+		padding: 20px;
+	}
+
+	.tip-text {
+		display: none;
+	}
+
+	.tip-wait {
+		color: #999;
+		display: block;
+	}
+
+	.tip-success {
+		color: #009900;
+	}
+
+	.tip-loading {
+		color: #FF6600;
+	}
+
+	.tip-fail {
+		color: #FF0000;
+	}
+
+	.upgrade-file {
+		text-align: right !important;
+		padding-right: 20px;
+	}
+
+	.upgrade-file button {
+		margin: 10px 0;
+		width: 130px;
+	}
+	.td-set {
+		width: 70%;
+	}
+
+	.aui_content {
+		overflow-y: auto;
+	}
+
+	.alert-warn {
+		padding: 7px 22px 5px 37px;
+		background: #fff3e5;
+		border: 1px solid #ff8800;
+		border-radius: 2px;
+		color: #ff8800;
+		font-size: 12px;
+		line-height: 2em;
+	}
+	.filename {
+		height: 36px;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+	.margin-bottom-20 {
+		margin-bottom: 20px;
+	}
+	.btn-updatecache{
+		margin-left: 0px;
+	}
+	#search_form{
+		margin-left: 0px;
+	}
+	    
+</style>
+<div id="contentBox"></div>
+<td id="contentTemplate" valign="top">
+	<div class="header-box clearfix">
+		<div class="logo-info pull-left"></div>
+		<div class="nav-tab pull-left nav-list">
+			<ul>
+				<li><a {if $_GPC['pag']=='register_view'}class="selected"{/if} href="{php echo url('cloud/upgrades',array('pag'=>'register_view'));}"><span>注册</span></a></li>
+				<li><a {if $_GPC['pag']=='upgrade_view'}class="selected"{/if} href="{php echo url('cloud/upgrades',array('pag'=>'upgrade_view'));}"><span>更新</span></a></li>
+				<li><a {if $_GPC['pag']=='uplog_view'}class="selected"{/if} href="{php echo url('cloud/upgrades',array('pag'=>'uplog_view'));}"><span>回滚</span></a></li>
+				<li><a {if $_GPC['pag']=='module_view'}class="selected"{/if} href="{php echo url('cloud/upgrades',array('pag'=>'module_view'));}"><span>应用</span></a></li>
+				<li><a {if $_GPC['pag']=='tool_view'}class="selected"{/if} href="{php echo url('cloud/upgrades',array('pag'=>'tool_view'));}"><span>工具</span></a></li>
+				<li><a href="javascript:volid(0);"><span>帮助</span></a></li>
+			</ul>
+		</div>
+	</div>
+	<div class="main-area">
+		<div class="title-bar">
+			<div>
+				云应用管理
+			</div>
+		</div>
+		<div class="warm-tip">
+			温馨提醒：收费应用需独立授权
+		</div>
+		<div class="search-box operates-container clearfix">
+			<form action="./index.php" method="get" id="search_form">
+				{$hideParams}
+				搜索条件：
+				<select class="select" name="searchType">
+					<option value="title"{if $_GPC['searchType'] == 'title'} selected{/if}>名称</option>
+					<option value="name"{if $_GPC['searchType'] == 'name'} selected{/if}>标识</option>
+				</select>
+				<input name="keyword" type="text" class="input defaultinput" value="{$_GPC['keyword']}" _value="关键词" placeholder="关键词"/>
+				<input type="button" value="查询" class="btn btn-primary" onclick="pagination_page(1)" />
+				<input type="hidden" name="c" value="cloud" />
+				<input type="hidden" name="a" value="upgrades" />
+				<input type="hidden" name="pag" value="module_view" />
+				<input type="hidden" name="token" value="{$_W['token']}" />
+				{$hiddenParams}
+			</form>
+			<button class="btn btn-primary btn-updatecache" onclick="module.cacheUp();">更新缓存</button>			
+		</div>	
+		<table width="100%" border="0" cellspacing="0" cellpadding="0"
+			   class="main-table main-table-stripe">
+			<thead>
+			<tr class="table-title" bgcolor="#f0f4f7">
+				<th style="text-align: left; width: 25%;">应用名称</th>
+				<th style="text-align: left; width: 25%;">应用类目</th>
+				<th style="text-align: left; width: 10%;">本地版本</th>
+				<th style="text-align: left; width: 10%;">云端版本</th>
+				<th style="text-align: left; width: 10%;">收费标准</th>
+				<th style="text-align: left; width: 20%;">相关操作</th>
+			</tr>
+			</thead>
+			<tbody style="height: 100%;">
+				{loop $lists $key $module}
+					<tr style="">
+						<td style="">
+							{$module['title']}
+						</td>
+						<td style="">
+							{$module['cate_title']}
+						</td>
+						<td style="">
+							{$module['version_local']}
+						</td>
+						<td style="">
+							{$module['version_cloud']}
+						</td>	
+						<td style="">
+							{$module['price']}
+						</td>								
+						<td style="">
+							<button class="btn btn-primary" style="color:#ffffff;" onclick="module.actionAuth('{$key}');">授权</button>
+							{$module['button']}
+						</td>
+					</tr>
+				{/loop}				
+			</tbody>
+		</table>
+		<table width="100%" cellspacing="0" cellpadding="0">	
+			<tr>
+				{$pagination}
+			</tr>
+		</table>
+	</div>
+<div class="hide" id="">
+	<form action="{url 'cloud/upgrades' array('pag'=>'modules_view','act'=>'register')}" id="rollbackForm" style="">
+		<table class="inner-table edit-table" style="width: 600px">
+			<tr>
+				<th style="width: 120px;">站点信息：</th>
+				<td><input type="hidden" id="appid" name="app" value=""/><input type="text" class="input input-xlong error-tip" id="result" autocomplete="off" value="" placeholder="授权后显示" readonly="readonly" /><span class="show-tip requiring" data-query="weba-register-domain"></span></td>
+			</tr>			
+			<tr>
+				<th style="width: 120px;">主域名：</th>
+				<td><input type="text" class="input input-xlong" id="domain" name="domain" autocomplete="off" value="" placeholder="必填,如:a.bc.com"/><span class="show-tip requiring" data-query="weba-register-domain"></span></td>
+			</tr>
+			<tr>
+			<th>SSL：</th>
+			<td><label class="first-label"><input type="radio" id="is_https" name="is_https" value="1" checked="">HTTPS</label><label><input type="radio" name="is_https" value="0">HTTP</label><span class="show-tip" data-query="weba-register-is_https"></span></td>
+			</tr>			
+			<tr class="color">
+				<th>主IP：</th>
+				<td><input type="text" class="input input-xlong" id="ip" name="ip" autocomplete="off" value="" placeholder="必填"/><span class="show-tip requiring" data-query="weba-register-ip"></span></td>
+			</tr>
+			<tr>
+				<th>授权码：</th>
+				<td><input type="text" class="input input-xlong" id="token" name="token" autocomplete="off" value="" placeholder="免费则无需填写"/><span class="show-tip requiring" data-query="weba-register-token"></span></td>
+			</tr>
+			<tr>
+				<th>预留邮箱：</th>
+				<td><input type="text" class="input input-xlong" id="email" name="email" autocomplete="off" value="" placeholder="必填"/><span class="show-tip requiring" data-query="weba-register-email"></span></td>
+			</tr>		
+			<tr>
+				<th>充值码：</th>
+				<td><input type="text" class="input input-xlong" id="card" name="card" autocomplete="off" value="" placeholder="选填"/><span class="show-tip requiring" data-query="weba-register-card"></span></td>
+			</tr>
+		</table>
+	</form>
+</div>	
+	<script type="text/javascript">
+		$(function() {
+
+		});
+		
+		var module = {
+			cacheUp:function() {
+				WE.post({
+					url: "{url 'cloud/upgrades' array('pag'=>'module_view','act'=>'cache_check')}",
+					success: function(data) {
+						if(data.result) {
+							window.location.reload();
+							return false;
+						}
+					}
+				});				
+			},
+			checkAuthFrame: function() {		
+				WE.post({
+					isCoverSuccess: true,
+					url: "{url 'cloud/upgrades' array('pag'=>'module_view','act'=>'frame_check')}",
+					success: function(data) {
+						if(data.result == false) {
+							window.location.href = "{url 'cloud/upgrades' array('pag'=>'register_view')}";
+							return false;
+						}else{
+							
+						}
+					}
+				});
+			},
+			checkAuth: function(appid) {
+				WE.post({
+					isCoverSuccess: true,
+					url: "{url 'cloud/upgrades' array('pag'=>'modules_view','act'=>'auth_check')}&app="+appid,
+					success: function(data) {
+						//console.log(data);
+						if(data.result == false) {
+							WE.error(data.text, 600);
+							return false;
+						}else{
+							return true;
+						}
+					},
+					error: function() {
+						WE.error('网络错误', 600);
+					}
+				});
+			},			
+			actionUp: function(appid) {
+				module.checkAuthFrame();
+				//module.checkAuth(appid);
+				WE.post({
+					isCoverSuccess: true,
+					url: "{url 'cloud/upgrades' array('pag'=>'modules_view','act'=>'auth_check')}&app="+appid,
+					success: function(data) {
+						console.log(data);
+						if(data.result == false) {
+							WE.error(data.text, 600);
+							return false;
+						}else{
+							window.location.href = "{url 'cloud/upgrades' array('pag'=>'modules_view')}&app="+appid;
+						}
+					},
+					error: function() {
+						WE.error('网络错误', 600);
+					}
+				});
+			},
+			actionBack: function(appid) {
+				module.checkAuthFrame();
+				//module.checkAuth(appid);
+				WE.post({
+					isCoverSuccess: true,
+					url: "{url 'cloud/upgrades' array('pag'=>'modules_view','act'=>'auth_check')}&app="+appid,
+					success: function(data) {
+						console.log(data);
+						if(data.result == false) {
+							WE.error(data.text, 600);
+							return false;
+						}else{
+							window.location.href = "{url 'cloud/upgrades' array('pag'=>'modules_view','act'=>'uplog_modules')}&app="+appid;
+						}
+					},
+					error: function() {
+						WE.error('网络错误', 600);
+					}
+				});
+			},			
+			checkAuth2: function(appid) {
+				
+				WE.post({
+					isCoverSuccess: true,
+					url: "{url 'cloud/upgrades' array('pag'=>'modules_view','act'=>'auth_check')}&app="+appid,
+					success: function(data) {
+						console.log(data);
+						$('#appid').val(appid);	
+						if(data.result) {
+							$('#domain').val(data.data.domain);
+							$('#ip').val(data.data.ip);
+							if(data.data.is_https){
+								$("input[name='is_https']").eq(0).attr("checked","checked");
+							}else{
+								$("input[name='is_https']").eq(1).attr("checked","checked");
+							}
+							$('#email').val(data.data.email);
+							$('#token').val(data.data.token);		
+						}else{
+							$('#domain').val('');
+							$('#ip').val('');
+							$("input[name='is_https']").eq(1).attr("checked","checked");
+							$('#email').val('');
+							$('#token').val('');								
+						}
+					},
+					error: function() {
+						WE.error('网络错误', 600);
+					}
+				});
+			},			
+			actionAuth: function(appid) {
+			module.checkAuth2(appid);
+			/*
+			var domain = $('#domain').val().replace(/[ ]/g,"");
+			var ip = $('#ip').val().replace(/[ ]/g,"");
+			var is_https = $("input[name='is_https']:checked").val();
+			var email = $('#email').val().replace(/[ ]/g,"");
+			var token = $('#token').val().replace(/[ ]/g,"");
+			var card = $('#card').val().replace(/[ ]/g,"");
+			var appid = $('#appid').val().replace(/[ ]/g,"");
+			var data = {domain:domain, ip:ip, is_https:is_https, email:email, token:token, card:card};
+			$("#registerBtn").attr('disabled', true).html('提交中');
+			module.actionCheck_init(data,appid);	
+			*/
+				$.dialog({
+					title: "注册模块站点",
+					content: $("#rollbackForm")[0],
+					cancel: true,
+					ok: function () {
+						var $_form = $("#rollbackForm");
+						WE.post({
+							isCoverSuccess: true,
+							url: $_form.attr("action")+"&app="+appid,
+							data: $_form.serialize(),
+							success: function(data) {
+							console.log(data);
+								
+								if(data.result){
+									WE.success(data.text, 600);
+								}else{
+									WE.error(data.text, 600);
+								}						
+									
+								
+							}
+						});
+						return false;
+					}
+				});
+			},
+			actionCheck_init: function(objdata,appid) {
+				WE.post({
+					isCoverSuccess: true,
+					url: "{url 'cloud/upgrades' array('pag'=>'register_view','act'=>'register')}&app="+appid,
+					data: objdata,
+					success: function(data) {
+						if(data.result) {
+							if(data.data.result){
+								$("#result").val(data.data.result);
+							}
+							if(data.data.notice){
+								$("#notice").val(data.data.notice);
+							}							
+							
+						}
+						$("#registerBtn").removeAttr('disabled').html('确认注册');
+					}
+				});
+			},		
+			actionCheck: function(objdata,appid) {
+				WE.post({
+					isCoverSuccess: true,
+					url: "{url 'cloud/upgrades' array('pag'=>'register_view','act'=>'register')}&app="+appid,
+					data: objdata,
+					success: function(data) {
+						if(data.result) {
+							if(data.data.result){
+								$("#result").val(data.data.result);
+							}
+							if(data.data.notice){
+								$("#notice").val(data.data.notice);
+							}							
+							WE.success(data.text, 600);
+							$("#registerBtn").removeAttr('disabled').html('确认注册');
+						}else {
+							WE.error(data.text, 600);
+							$("#registerBtn").removeAttr('disabled').html('确认注册');
+						}
+					},
+					error: function() {
+
+						WE.error('操作失败,请重试!', 600);
+						$("#registerBtn").removeAttr('disabled').html('确认注册');
+					}
+				});
+			}		
+		};
+	</script>
+	
+</td>

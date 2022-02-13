@@ -1,0 +1,617 @@
+{extend name="upgrades/headers"/}
+{block name='main'}
+<table cellspacing="0" cellpadding="0" style="width:98%;">
+	<div id="contentBox"></div>
+	<td id="contentTemplate" valign="top">
+		<div class="header-box clearfix">
+			<div class="logo-info pull-left"></div>
+			{include file="upgrades/menu" /}
+		</div>
+		<div class="main-area">
+		<div class="title-bar">
+			<div>
+				系统更新
+			</div>
+		</div>
+		<div class="warm-tip">
+			温馨提醒：升级前请务必做好系统及数据库的备份，避免发生意外;&nbsp;&nbsp;&nbsp;&nbsp;升级前确保网站处于关闭状态，否则可能会导致不可预知的故障。
+		</div>
+
+		<div class="content-block" style="border-bottom: none;float:left;">
+			<!--<div class="content-block-title">
+				系统更新
+			</div>-->
+			<table class="inner-table edit-table">
+				<tr>
+					<th style="width: 120px;">当前版本号：</th>
+					<td id="version">{$versionInfo['version']}</td>
+				</tr>
+				{if !empty($update_logs)}
+				<tr>
+					<th style="width: 120px;">当前版本简述：</th>
+					<td id="updateLogs">{$update_logs}</td>
+				</tr>
+				{/if}
+				<tr class="color">
+					<th>版本发布时间：</th>
+					<td id="updateTime">{$versionInfo['version_update_time']}</td>
+				</tr>
+				<tr>
+					<th>最近一次更新的时间：</th>
+					<td id="updateTimeLocal">{$versionInfo['update_time']}</td>
+				</tr>
+				<tr>
+					<th></th>
+					<td>
+						<button class="btn btn-primary" id="checkBtn">检查更新</button>
+					</td>
+				</tr>
+			</table>
+		</div>
+		<!--<div class="content-block" style="border-bottom: none;float:right;">
+			<div class="content-block-title">
+				更新日志/公告
+			</div>
+			<table class="inner-table edit-table">
+				<tr>
+					<th></th>
+					<td>
+						<textarea name="updatelogs" id="updateLogs" class="form-control" cols="100" rows="10">{$update_logs}</textarea>
+					</td>
+				</tr>
+			</table>
+		</div>-->
+		<div class="content-block" style="border-bottom:none;clear:both;">
+			<!--<div class="content-block-title">
+				免更新文路径设置
+			</div>-->
+			<table class="inner-table edit-table">
+				<tr>
+					<th></th>
+					<td>
+						<textarea name="noupdatefiles" id="noupdateFiles" class="form-control" cols="100" rows="11" placeholder="免更新文路径设置，可避免因修改文件被更新替换">{$noupdate}</textarea>
+					</td>
+				</tr>
+				<tr>
+					<th></th>
+					<td>
+						<button class="btn btn-primary" id="noupdateBtn" style="margin-left: 22px;">免更新文件提交设置</button>
+					</td>
+				</tr>
+			</table>
+		</div>
+
+		<div class="content-block" style="display: none;border-bottom: none;border-top: 1px solid #e6e6e6;" id="upgradeProgress">
+			<div class="content-block-title">
+				<div class="warm-tip">
+					检查更新进度
+				</div>
+			</div>
+			<table width="100%" border="0" cellspacing="0" cellpadding="0" class="main-table main-table-stripe">
+				<tr>
+					<th>操作</th>
+					<th>状态</th>
+				</tr>
+				<tr>
+					<td class="td-set">检测服务器环境</td>
+					<td id="condition">
+						<span class="tip-text tip-wait">等待</span>
+						<span class="tip-text tip-success">成功</span>
+						<span class="tip-text tip-loading">连接中</span>
+						<span class="tip-text tip-fail">失败 <a href="javascript:;" onclick="upgrade.actionCondition()">重试</a></span>
+					</td>
+				</tr>
+				<tr>
+					<td class="td-set">连接到升级服务器</td>
+					<td id="linkServer">
+						<span class="tip-text tip-wait">等待</span>
+						<span class="tip-text tip-success">成功</span>
+						<span class="tip-text tip-loading">连接中</span>
+						<span class="tip-text tip-fail">失败 <a href="javascript:;" onclick="upgrade.actionStatus()">重试</a></span>
+					</td>
+				</tr>
+				<tr class="color">
+					<td class="td-set">下载指纹文件</td>
+					<td id="downFile">
+						<span class="tip-text tip-wait">等待</span>
+						<span class="tip-text tip-success">成功</span>
+						<span class="tip-text tip-loading">下载中</span>
+						<span class="tip-text tip-fail">失败 <a href="javascript:;" onclick="upgrade.actionDownloadFingerprint()">重试</a></span>
+					</td>
+				</tr>
+				<tr>
+					<td class="td-set">初始化操作</td>
+					<td id="init">
+						<span class="tip-text tip-wait">等待</span>
+						<span class="tip-text tip-success">成功</span>
+						<span class="tip-text tip-loading">进行中</span>
+						<span class="tip-text tip-fail">失败 <a href="javascript:;" onclick="upgrade.init()">重试</a></span>
+					</td>
+				</tr>
+				<tr>
+					<td class="td-set">查找文件差异</td>
+					<td id="getDiffMap">
+						<span class="tip-text tip-wait">等待</span>
+						<span class="tip-text tip-success">成功</span>
+						<span class="tip-text tip-loading">进行中</span>
+						<span class="tip-text tip-fail">失败 <a href="javascript:;" onclick="upgrade.actionGetDiffMap()">重试</a></span>
+					</td>
+				</tr>
+			</table>
+		</div>
+
+		<div class="content-block" style="display: none;border-bottom: none;border-top: 1px solid #e6e6e6;" id="fileList">
+			<div class="content-block-title">
+				需要更新的文件
+			</div>
+			<table width="100%" border="0" cellspacing="0" cellpadding="0"
+			       class="main-table main-table-stripe scrolltable">
+				<thead>
+				<tr class="table-title" bgcolor="#f0f4f7">
+					<th style="text-align: center;width:35%;">文件</th>
+					<th style="text-align: center;width:15%;">远程文件最后更新时间</th>
+					<th style="text-align: center;width:15%;">本地文件最后更新时间</th>
+					<th style="text-align: center;width:8%;">远程文件源码</th>
+					<th style="text-align: center;width:8%;">免更文件源码</th>
+					<th style="text-align: center;width:8%;">状态</th>
+				</tr>
+				</thead>
+				<tbody id="fileListTable">
+				</tbody>
+				<tfoot>
+				<tr>
+					<td colspan="6" class="upgrade-file">
+						共计<span id="total">0</span>个文件&nbsp;&nbsp;
+						<button class="btn btn-primary" style="display: none" onclick="noupdate.zipDown()" id="zipDown">打包免更文件</button>
+						<button class="btn btn-primary" onclick="upgrade.fileUpdate()" id="fileUpdate">下载全部文件</button>
+					</td>
+				</tr>
+				</tfoot>
+			</table>
+		</div>
+		<div id="layerDiv" style="display: none">
+			<div class="upgrade-layer-mask"></div>
+			<div class="upgrade-layer">
+				<p>更新完成！本次更新的备份文件存放在<span id="filePath"></span>目录</p>
+				<p>如果系统不正常，请将此目录文件恢复</p>
+				<button class="upgrade-btn" onclick="upgrade.layerHide()">确定</button>
+			</div>
+		</div>
+		<div id="loadingDiv" style="display: none">
+			<div class="upgrade-layer-mask"></div>
+			<div class="we-loading-box">
+				<div class="loading-tip-head">
+					提示信息
+				</div>
+				<i></i>
+				<div class="loading-tip-text">努力升级中，请稍后......</div>
+			</div>
+		</div>
+	</div>
+	</td>
+</table>
+{/block}
+{block name="script"}
+<script type="text/javascript">
+	$(function() {
+		$("#checkBtn").on('click', function() {
+			$("#checkBtn").attr('disabled', true).html('努力检查中');
+			upgrade.actionInfo();
+			upgrade.actionCheck();
+		});
+		$("#noupdateBtn").on('click', function() {
+			var noupdateFiles = $('#noupdateFiles').val().replace(/[ ]/g,"");
+			var data = {noupdatefiles:noupdateFiles};
+			$("#noupdateBtn").attr('disabled', true).html('提交中');
+			noupdate.actionCheck(data);
+		});
+		$("#checkAll").on('click', function() {
+			var $_fileCheck = $(".file-check");
+			$_fileCheck.prop('checked', this.checked);
+		});
+	});
+	var $_upgradeProgress = $("#upgradeProgress");
+	var $_fileList = $("#fileList");
+	var upgrade = {
+		fileCount:0,
+		successFile:0,
+		actionInfo: function() {
+			WE.post({
+				url: "{:url('admin/upgrades/index',['pag'=>'default','act' => 'info'])}",
+				success: function(data) {
+					if(data.result) {
+						$("#version").text(data.version);
+						$("#updateTime").text(data.version_update_time);
+						$("#updateTimeLocal").text(data.update_time);
+					}else {
+						$("#checkBtn").removeAttr('disabled').html('检查更新');
+					}
+				}
+			});
+		},
+		actionCheck: function() {
+			$(".tip-text").hide();
+			$("#upgradeProgress").find('.tip-wait').show();
+			$("#fileList").hide();
+			$("#fileUpdate").html('下载全部文件').removeAttr('disabled').attr('onclick', 'upgrade.fileUpdate()');
+			upgrade.upFlag = true;
+			$_upgradeProgress.show();
+			upgrade.actionCondition();
+			$("#fileListTable").empty();
+			$_fileList.hide();
+		},
+		actionCondition: function() {
+			var $_condition = $("#condition");
+			WE.post({
+				isCoverSuccess: true,
+				url: "{:url('admin/upgrades/index',['pag'=>'default','act' => 'check'])}",
+				beforeSend: function() {
+					$_condition.find('span').hide().eq(2).show();
+				},
+				success: function(data) {
+					if(data.result) {
+						setTimeout(function() {
+							upgrade.actionStatus();
+						},1000);
+					}else {
+						WE.warn(data.text, 600);
+					}
+					$_condition.find('span').hide().eq(1).show();
+				},
+				error: function() {
+					WE.error('网络错误', 600);
+					$_condition.find('span').hide().eq(3).show();
+				}
+			});
+		},
+		actionStatus: function() {
+			var $_linkServer = $("#linkServer");
+			WE.post({
+				isCoverSuccess: true,
+				url: "{:url('admin/upgrades/index',['pag'=>'default','act' => 'connect'])}",
+				beforeSend: function() {
+					$_linkServer.find('span').hide().eq(2).show();
+				},
+				success: function(data) {
+					if(data.result) {
+						setTimeout(function() {
+							upgrade.actionDownloadFingerprint();
+						},1000);
+					}else {
+						WE.warn(data.text, 600);
+					}
+					$_linkServer.find('span').hide().eq(1).show();
+				},
+				error: function() {
+					WE.error('网络错误', 600);
+					$_linkServer.find('span').hide().eq(3).show();
+				}
+			});
+		},
+		actionDownloadFingerprint: function() {
+			var $_downFile = $("#downFile");
+			WE.post({
+				isCoverSuccess: true,
+				url: "{:url('admin/upgrades/index',['pag'=>'default','act' => 'downloadFingerprint'])}",
+				beforeSend: function() {
+					$_downFile.find('span').hide().eq(2).show();
+				},
+				success: function(data) {
+					if(data.result) {
+
+						setTimeout(function() {
+							upgrade.init();
+						},1000);
+					}else {
+						WE.warn(data.text, 600);
+					}
+					$_downFile.find('span').hide().eq(1).show();
+				},
+				error: function() {
+					WE.error('网络错误', 600);
+					$_downFile.find('span').hide().eq(3).show();
+				}
+			});
+		},
+		init: function() {
+			var $_init = $("#init");
+			WE.post({
+				isCoverSuccess: true,
+				url: "{:url('admin/upgrades/index',['pag'=>'default','act' => 'init'])}",
+				beforeSend: function() {
+					$_init.find('span').hide().eq(2).show();
+				},
+				success: function(data) {
+					if(data.result) {
+						setTimeout(function() {
+							upgrade.actionGetDiffMap();
+						},1000);
+					}else {
+						WE.warn(data.text, 600);
+					}
+					$_init.find('span').hide().eq(1).show();
+				},
+				error: function() {
+					WE.error('网络错误', 600);
+					$_init.find('span').hide().eq(3).show();
+				}
+			});
+		},
+		actionGetDiffMap: function() {
+			var $_getDiffMap = $("#getDiffMap");
+			WE.post({
+				isCoverSuccess: true,
+				url: "{:url('admin/upgrades/index',['pag'=>'default','act' => 'getDiffMap'])}",
+				beforeSend: function() {
+					$_getDiffMap.find('span').hide().eq(2).show();
+				},
+				success: function(data) {
+					if(data.result) {
+						setTimeout(function() {
+							if(data.fileDiffList.length) {
+								upgrade.getFileList(data.fileDiffList,data.fileNoupdateList);
+							}else {
+								$(".scrolltable").hide();
+							}
+						},1000);
+					}else {
+						WE.warn(data.text || '暂无更新', 600);
+					}
+					$_getDiffMap.find('span').hide().eq(1).show();
+				},
+				error: function() {
+					WE.error('网络错误', 600);
+					$_downFile.find('span').hide().eq(3).show();
+				}
+			});
+		},
+		getFileList: function(array,noupdatearr) {
+			var $_fileListTable = $("#fileListTable");
+			var $_fileUpdate = $("#fileUpdate");
+			var $_total = $("#total");
+			$_upgradeProgress.hide();
+			$_fileList.show();
+			var html = '';
+			var html2 = '';
+			var html3 = '';
+			var html4 = '';
+			var count = 0;
+			var statusHTML;
+			var linksHTML;
+			var className;
+			var sourceDownCloud_url = "{:url('admin/upgrades/index',['pag'=>'default','act'=>'sourceDownCloud'])}&key=";
+			var sourceDownLocal_url = "{:url('admin/upgrades/index',['pag'=>'default','act'=>'sourceDownLocal'])}&key=";
+			var sourceShowLocal_url = "{:url('admin/upgrades/index',['pag'=>'default','act'=>'sourceDownLocal'])}&do=show&key=";
+			var hasSql = false;
+			$.each(array, function(i, d) {
+				if(d.filename == 'update.sql' ) {
+					statusHTML = '<span class="tip-text tip-success" style="display:inline">下载成功</span>';
+					hasSql = true;
+					linksHTML = "{:url('admin/upgrades/index',['pag'=>'default','act'=>'database'])}&key=";
+				}else {
+
+					if(d.isdownload){
+						statusHTML = '<span class="tip-text tip-success" style="display:inline">下载成功</span>';
+					}else{
+						statusHTML = '<span class="tip-text tip-wait">等待</span><span class="tip-text tip-success">下载成功</span><span class="tip-text tip-loading">下载中</span><span class="tip-text tip-fail">下载失败</span><span class="tip-text tip-fail">升级失败</span>';
+					}
+					linksHTML = "{:url('admin/upgrades/index',['pag'=>'default','act'=>'source'])}&key=";
+				}
+				if(i % 2 == 1) {
+					className = 'color';
+				}else {
+					className = '';
+				}
+				var data = d;
+
+				count ++;
+
+				if(noupdatearr[data.filename]){
+					html2 = '<td style="text-align: center;"><a onclick="colorchange(this);" href="'+ sourceShowLocal_url +data.filename+'" target="_blank">查看</a>&nbsp;<a onclick="colorchange(this);" href="'+ sourceDownLocal_url +data.filename+'" target="_blank">下载</a></td>';
+					html3 = '&nbsp;<a onclick="colorchange(this);" href="'+ sourceDownCloud_url +data.filename+'" target="_blank">下载</a>';
+				}else{
+					html2 = '<td style="text-align: center;">NO</td>';
+					html3 = '';
+				}
+				if(d.isdownload){
+					html += '<tr  flag="success" class="'+className+'" data-name="' + data.filename + '"><td class="filename" title="'+data.filename+'">' + data.filename + '</td><td style="text-align: center;">' + data.update_time + '</td><td style="text-align: center;">' + data.update_time_local + '</td><td style="text-align: center;"><a onclick="colorchange(this);" href="'+ linksHTML +data.filename+'" target="_blank">查看</a>' + html3 + '</td>';
+				}else{
+					html += '<tr class="'+className+'" data-name="' + data.filename + '"><td class="filename" title="'+data.filename+'">' + data.filename + '</td><td style="text-align: center;">' + data.update_time + '</td><td style="text-align: center;">' + data.update_time_local + '</td><td style="text-align: center;"><a onclick="colorchange(this);" href="'+ linksHTML +data.filename+'" target="_blank">查看</a>' + html3 + '</td>';
+				}
+
+				html += html2;
+
+				html4 = '<td style="text-align: center;">'+statusHTML+'</td></tr>';
+
+				html += html4;
+
+			});
+			if(array.length == 1 && (array[0].filename == 'update.sql')) {
+				$_fileUpdate.html('升级').attr('onclick', 'upgrade.update()');
+			}
+			$_total.text(count);
+			upgrade.fileCount = count;
+			if(hasSql) {
+				upgrade.fileCount --;
+			}
+			$_fileListTable.append(html);
+			var $table = $('table.scrolltable'),
+					$bodyCells = $table.find('tbody tr:first').children(),
+					colWidth;
+			$table.find('tbody tr td:nth-child(1)').css('width','35%').css('text-align','left');
+			if($(window).width() <= 1240) {
+				$table.find('tbody tr td:nth-child(1)').css('width','30%').css('text-align','left');
+			}
+			$table.find('tbody tr td:nth-child(2)').css('width','15%');
+			$table.find('tbody tr td:nth-child(3)').css('width','15%');
+			$table.find('tbody tr td:nth-child(4)').css('width','8%');
+			$table.find('tbody tr td:nth-child(5)').css('width','8%');
+			$table.find('tbody tr td:nth-child(6)').css('width','8%');
+			colWidth = $bodyCells.map(function() {
+				return $(this).width();
+			}).get();
+
+			$("#checkBtn").html('检查更新');
+
+			$table.find('thead tr').children().each(function(i, v) {
+				$(v).width(colWidth[i]);
+			});
+		},
+		singleFileUpdate: function(obj, key, count) {
+			var $_fileUpdate = $("#fileUpdate");
+			var $_status = $(obj).find('.tip-text');
+			WE.post({
+				isCoverSuccess: true,
+				url: "{:url('admin/upgrades/index',['pag'=>'default','act' => 'download'])}",
+				data: {key: key},
+				beforeSend: function() {
+					$_status.hide().eq(2).show();
+				},
+				success: function(data) {
+					if(data.result) {
+						$(obj).attr('flag','success');
+						$_status.hide().eq(1).show();
+					}else {
+						$_status.hide().eq(3).show();
+						setTimeout(function() {
+							count --;
+							if(count >= 0) {
+								upgrade.singleFileUpdate(obj, key, count);
+							}
+						},2000);
+					}
+				},
+				error: function() {
+					$_status.hide().eq(3).html('下载超时').show();
+					setTimeout(function() {
+						count --;
+						if(count >= 0) {
+							upgrade.singleFileUpdate(obj, key, count);
+						}
+					},2000);
+				}
+			});
+			$(document).ajaxStop(function() {
+				upgrade.successFile = $("#fileListTable").find('tr[flag |="success"]').length;
+				if(upgrade.successFile == upgrade.fileCount) {
+					$("#zipDown").show();
+					$_fileUpdate.html('升级').removeAttr('disabled').attr('onclick', 'upgrade.update()');
+				}else {
+					$_fileUpdate.html('继续下载').removeAttr('disabled').attr('onclick', 'upgrade.fileUpdate()');
+				}
+			});
+		},
+		fileUpdate: function() {
+			var $_fileListTable = $("#fileListTable");
+			var trs = $_fileListTable.find('tr');
+			var $_fileUpdate = $("#fileUpdate");
+			$_fileUpdate.html('下载中').attr('disabled', true);
+			upgrade.successFile = $("#fileListTable").find('tr[flag |="success"]').length;
+			if(upgrade.successFile == upgrade.fileCount) {
+				$("#zipDown").show();
+				$_fileUpdate.html('升级').removeAttr('disabled').attr('onclick', 'upgrade.update()');
+				return;
+			}
+
+			var k;
+			$.each(trs, function(i, d) {
+				var $_that = $(d);
+				var name = $_that.data('name');
+				var flag = $_that.attr('flag');
+				if(trs.eq(0).data('name') == 'update.sql') {
+					k = i;
+				}else {
+					k = i + 1;
+				}
+				if(k !=0 && (flag != 'success')) {
+					upgrade.singleFileUpdate($_that, name, 5);
+				}
+			});
+		},
+		layerHide: function() {
+			$("#layerDiv").hide();
+		},
+		update: function() {
+			var $_fileListTable = $("#fileListTable");
+			var $_fileUpdate = $("#fileUpdate");
+			$_fileUpdate.attr('disabled', true);
+			var trs = $_fileListTable.find('tr');
+			if(upgrade.upFlag) {
+				WE.tips.ask({
+					title: "确认框",
+					content: '升级前请确定您的网站程序及数据库已备份，以防不测！',
+					subTipContent: "您确定要立即升级吗？",
+					ok: function () {
+						WE.post({
+							isCoverSuccess: true,
+							beforeSend: function() {
+								$("#loadingDiv").show();
+							},
+							url: "{:url('admin/upgrades/index',['pag'=>'default','act' => 'upgrade'])}",
+							success: function(data) {
+								$("#loadingDiv").hide();
+								if(data.result) {
+									$_fileUpdate.attr('disabled', true);
+									WE.success(data.text, 600);
+								}else {
+									$_fileUpdate.removeAttr('disabled');
+									var errFiles = data.err_files;
+									var errStr = data.text;
+									var sqlStr = '';
+									if(errFiles && errFiles.length) {
+										$.each(trs, function(j, ele) {
+											var name = $(ele).data('name');
+											$.each(errFiles, function(i, d) {
+												if(d == name) {
+													$(ele).find('.tip-text').hide().eq(4).show();
+												}
+											});
+										});
+									}
+									$(".aui_content").css('max-height',$(window).height());
+									WE.error(errStr, 600);
+								}
+							}
+						});
+					},
+					close: function() {
+						$_fileUpdate.removeAttr('disabled');
+					}
+				});
+			}else {
+				WE.error('有文件下载失败,请等待完成或重新更新', 2);
+			}
+		}
+	};
+
+	var noupdate = {
+		actionCheck: function(objdata) {
+			WE.post({
+				isCoverSuccess: true,
+				url: "{:url('admin/upgrades/index',['pag'=>'default','act' => 'noupdate'])}",
+				data: objdata,
+				success: function(data) {
+					if(data.result) {
+						WE.success(data.text, 600);
+						$("#noupdateBtn").removeAttr('disabled').html('确认提交');
+					}else {
+						WE.error(data.text, 600);
+						$("#noupdateBtn").removeAttr('disabled').html('确认提交');
+					}
+				},
+				error: function() {
+
+					WE.error('操作失败,请重试!', 600);
+					$("#noupdateBtn").removeAttr('disabled').html('确认提交');
+				}
+			});
+		},
+		zipDown: function() {
+			window.location.href = "{:url('admin/upgrades/index',['pag'=>'default','act'=>'ziparchive'])}";
+		}
+	};
+	function colorchange(obj){
+		obj.css("color","#000");
+	}
+</script>
+{/block}

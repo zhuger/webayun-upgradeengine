@@ -1,0 +1,133 @@
+{extend name="upgrades/headers"/}
+{block name='main'}
+<table cellspacing="0" cellpadding="0" style="width:98%;">
+<div id="contentBox"></div>
+<td id="contentTemplate" valign="top">
+	<div class="header-box clearfix">
+		<div class="logo-info pull-left"></div>
+		{include file="upgrades/menu" /}
+	</div>
+	<div class="main-area">
+		<div class="title-bar">
+			<div>
+				回滚日志列表
+			</div>
+		</div>
+		<div class="warm-tip">
+			温馨提醒：此处为文件回滚非数据库结构回滚
+		</div>
+		<div class="search-box operates-container clearfix">
+			<form action="{:url('admin/upgrades/index',['pag'=>'modules_view','act'=>'rollback'])}" method="get" id="search_form">
+				搜索条件：
+				<select class="select" name="searchType">
+					<option value="version"{if request()->searchType == 'version'} selected{/if}>版本</option>
+					<option value="date"{if request()->searchType == 'date'} selected{/if}>日期</option>
+				</select>
+				<input name="keyword" type="text" class="input defaultinput" value="{:request()keyword}" _value="关键词" placeholder="关键词"/>
+				<input type="button" value="查询" class="btn btn-primary" onclick="pagination_page(1)" />
+				<input type="hidden" name="pag" value="modules_view" />
+				<input type="hidden" name="app" value="{:request()->app}" />
+				{$hiddenParams|raw}
+			</form>
+		</div>
+		<div class="content-block" style="border-bottom: none;border-top: 1px solid #e6e6e6;" id="fileList">
+			<!--<div class="content-block-title">
+				回滚文件列表
+			</div>-->
+			<table width="100%" border="0" cellspacing="0" cellpadding="0"
+			       class="main-table main-table-stripe">
+				<thead>
+				<tr class="table-title" bgcolor="#f0f4f7">
+					<th style="text-align: left; width: 25%;">备份日期</th>
+					<th style="text-align: left; width: 25%;">备份版本</th>
+					<th style="text-align: left; width: 40%;">文件名称</th>
+					<th style="text-align: left; width: 10%;">操作回滚</th>
+				</tr>
+				</thead>
+				<tbody style="height: 100%;">
+					{foreach $lists as $log_k => $log_v}
+						<tr style="">
+							<td style="">
+								{$log_v['date']}
+							</td>
+							<td style="">
+								{$log_v['version']}
+							</td>
+							<td style="">
+								{$log_v['name']}
+							</td>
+							<td style="">
+								<button class="btn btn-primary" onclick="uplog.rollBack('{$log_v['name']}');">回滚</button>
+							</td>
+						</tr>
+					{/foreach}
+				</tbody>
+			</table>
+			<table width="100%" cellspacing="0" cellpadding="0">
+				<tr>
+					{$pagination}
+				</tr>
+			</table>
+		</div>
+	</div>
+<div class="hide" id="">
+	<form action="{:url('admin/upgrades/index',['pag'=>'modules_view','act'=>'rollback'])}" id="rollbackForm" style="">
+		<table class="inner-table" style="width: 400px">
+			<tbody>
+				<tr>
+					<th width="20%">
+						输入文件名：
+					</th>
+					<td>
+						<input style="width: 240px" type="text" class="input" name="name" value="">
+						<input type="hidden" name="app" value="{$_GPC['app']}">
+					</td>
+				</tr>
+			</tbody>
+		</table>
+	</form>
+</div>
+</td>
+</table>
+{/block}
+{block name="script"}
+<script type="text/javascript">
+	$(function() {
+
+	});
+
+	var uplog = {
+		rollBack: function(name) {
+			$.dialog({
+				title: "请确认文件名称",
+				content: $("#rollbackForm")[0],
+				cancel: true,
+				ok: function () {
+					if($("#rollbackForm input[name=name]").val() != name){
+						WE.error('文件名不匹配', 600);
+						return false;
+					}
+					var $_form = $("#rollbackForm");
+					WE.post({
+						isCoverSuccess: true,
+						url: $_form.attr("action"),
+						data: $_form.serialize(),
+						success: function(data) {
+						console.log(data);
+
+							if(data.result){
+								WE.success(data.text, 600);
+							}else{
+								WE.error(data.text, 600);
+							}
+
+
+						}
+					});
+					return false;
+				}
+			});
+		}
+	};
+</script>
+{/block}

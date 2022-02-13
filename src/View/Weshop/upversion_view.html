@@ -1,0 +1,62 @@
+{extend name="upgrades/headers"/}
+{block name='main'}
+<table cellspacing="0" cellpadding="0" style="width:98%;">
+	<div id="contentBox"></div>
+	<td id="contentTemplate" valign="top">
+		<div class="header-box clearfix">
+			<div class="logo-info pull-left"></div>
+			{include file="upgrades/menu" /}
+		</div>
+		<div class="main-area">
+			<div class="title-bar">
+				<div>
+					更新版本日志
+				</div>
+			</div>
+			<div class="warm-tip">
+				温馨提醒：点击日期可以展开/关闭详细信息;&nbsp;&nbsp;&nbsp;&nbsp;
+			</div>
+			<div class="content-block" style="border-bottom: none;">
+				<div id="timelineContainer" class="timelineContainer">
+					<div class="timelineToggle"><p><a class="expandAll"></a></p></div>
+					<br class="clear">
+					{foreach $logVersionInfo as $log_k => $log_v}
+					<div class="timelineMajor">
+						<h2 class="timelineMajorMarker"><span>{$log_v['update_time']}</span></h2>
+						<dl class="timelineMinor">
+							{php}$first = reset($logVersionInfo);{/php}
+							<dt {if $first['version'] == $log_k} id="isFirstMinor"{/if}><a>{$log_k}</a>{if isset($log_v['local'])} <a style="color:#ff0000">[当前版本]</a>{/if}</dt>
+							<dd class="timelineEvent" {if $first['version'] == $log_k} id="isFirstEvent"{/if} style="display:none;">
+								<h3>{$log_v['log_not']}</h3>
+								<p>{$log_v['log_txt']}</p>
+								<br class="clear">
+							</dd><!-- /.timelineEvent -->
+						</dl><!-- /.timelineMinor -->
+					</div><!-- /.timelineMajor -->
+					{/foreach}
+				</div>
+			</div>
+		</div>
+	</td>
+</table>
+{/block}
+{block name="script"}
+<script type="text/javascript" src="__ROOT__/app/admin/view/public/upgrades/js/timeliner.min.js"></script>
+<script>
+	$(document).ready(function() {
+		$.timeliner({
+			timelineContainer: '#timelineContainer', // 值: 包含整个时间整的元素选择器, 默认值： #timelineContainer
+			startState: 'closed', // 值: closed | open, 默认 closed; 确定时间确最初是展开还是收缩
+			startOpen:['#isFirstMinor','#isFirstEvent'], // 值: 独立事件的ID数组, 默认为空; 独立事件在时间轴初始化时是否展开
+			baseSpeed: 200, // value: 任何整数, 默认值： 200; 基础速度, 有些动画会是基础速度的4倍
+			speed: 4, // value: 数字, 默认值： 4; 展开与收缩动画的速度算法，基于基础速度
+			fontOpen: '1.2em', // 值: 任何 CSS font-size 值, 默认 1em; 设置事件在打开的字体大小
+			fontClosed: '1em', // 值: 任何 CSS font-size 值, 默认 1em; 设置事件在隐藏后的字体大小
+			expandAllText: '+ 展开全部', // 值: string; 默认值 '+ expand all'，当然您可以使用中文“展开”
+			collapseAllText: '- 关闭全部' // 值: string; 默认 '- collapse all'
+		});
+
+	});
+</script>
+{/block}
+

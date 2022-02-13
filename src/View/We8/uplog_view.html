@@ -1,0 +1,228 @@
+{template 'common/header'}
+{templates 'headers'}
+<style type="text/css">
+	body {
+		position: relative;
+		overflow-x: hidden;
+	}
+	.main-table {
+
+	}
+	.upgrade-layer-mask {
+		position: fixed;
+		width: 100%;
+		height: 100%;
+		top: 0;
+		left: 0;
+		background-color: #000;
+		opacity: 0.5;
+		filter: alpha(opacity=50);
+	}
+	.upgrade-layer {
+		position: fixed;
+		width: 100%;
+		height: 100%;
+		top: 40%;
+		left: 50%;
+		width: 360px;
+		height: 120px;
+		margin: -60px 0 0 -180px;
+		background-color: #fff;
+		padding: 20px;
+	}
+
+	.tip-text {
+		display: none;
+	}
+
+	.tip-wait {
+		color: #999;
+		display: block;
+	}
+
+	.tip-success {
+		color: #009900;
+	}
+
+	.tip-loading {
+		color: #FF6600;
+	}
+
+	.tip-fail {
+		color: #FF0000;
+	}
+
+	.upgrade-file {
+		text-align: right !important;
+		padding-right: 20px;
+	}
+
+	.upgrade-file button {
+		margin: 10px 0;
+		width: 130px;
+	}
+
+	.td-set {
+		width: 70%;
+	}
+
+	.aui_content {
+		overflow-y: auto;
+	}
+
+	.alert-warn {
+		padding: 7px 22px 5px 37px;
+		background: #fff3e5;
+		border: 1px solid #ff8800;
+		border-radius: 2px;
+		color: #ff8800;
+		font-size: 12px;
+		line-height: 2em;
+	}
+	.filename {
+		height: 36px;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+	.margin-bottom-20 {
+		margin-bottom: 20px;
+	}
+</style>
+<div id="contentBox"></div>
+<td id="contentTemplate" valign="top">
+	<div class="header-box clearfix">
+		<div class="logo-info pull-left"></div>
+		<div class="nav-tab pull-left nav-list">
+			<ul>
+				<li><a {if $_GPC['pag']=='register_view'}class="selected"{/if} href="{php echo url('cloud/upgrades',array('pag'=>'register_view'));}"><span>注册</span></a></li>
+				<li><a {if $_GPC['pag']=='upgrade_view'}class="selected"{/if} href="{php echo url('cloud/upgrades',array('pag'=>'upgrade_view'));}"><span>更新</span></a></li>
+				<li><a {if $_GPC['pag']=='uplog_view'}class="selected"{/if} href="{php echo url('cloud/upgrades',array('pag'=>'uplog_view'));}"><span>回滚</span></a></li>
+				<li><a {if $_GPC['pag']=='module_view'}class="selected"{/if} href="{php echo url('cloud/upgrades',array('pag'=>'module_view'));}"><span>应用</span></a></li>
+				<li><a {if $_GPC['pag']=='tool_view'}class="selected"{/if} href="{php echo url('cloud/upgrades',array('pag'=>'tool_view'));}"><span>工具</span></a></li>
+				<li><a href="javascript:volid(0);"><span>帮助</span></a></li>
+			</ul>
+		</div>
+	</div>
+	<div class="main-area">
+		<div class="title-bar">
+			<div>
+				回滚日志列表
+			</div>
+		</div>
+		<div class="warm-tip">
+			温馨提醒：此处为文件回滚非数据库结构回滚
+		</div>
+		<div class="search-box operates-container clearfix">
+			<form action="./index.php" method="get" id="search_form">
+				{$hideParams}
+				搜索条件：
+				<select class="select" name="searchType">
+					<option value="version"{if $_GPC['searchType'] == 'version'} selected{/if}>版本</option>
+					<option value="date"{if $_GPC['searchType'] == 'date'} selected{/if}>日期</option>
+				</select>
+				<input name="keyword" type="text" class="input defaultinput" value="{$_GPC['keyword']}" _value="关键词" placeholder="关键词"/>
+				<input type="button" value="查询" class="btn btn-primary" onclick="pagination_page(1)" />
+				<input type="hidden" name="c" value="cloud" />
+				<input type="hidden" name="a" value="upgrades" />
+				<input type="hidden" name="pag" value="uplog_view" />
+				<input type="hidden" name="token" value="{$_W['token']}" />
+				{$hiddenParams}
+			</form>
+		</div>
+		<div class="content-block" style="border-bottom: none;border-top: 1px solid #e6e6e6;" id="fileList">
+			<div class="content-block-title">
+				回滚文件列表
+			</div>
+			<table width="100%" border="0" cellspacing="0" cellpadding="0"
+			       class="main-table main-table-stripe">
+				<thead>
+				<tr class="table-title" bgcolor="#f0f4f7">
+					<th style="text-align: left; width: 25%;">备份日期</th>
+					<th style="text-align: left; width: 25%;">备份版本</th>
+					<th style="text-align: left; width: 40%;">文件名称</th>
+					<th style="text-align: left; width: 10%;">操作回滚</th>
+				</tr>
+				</thead>
+				<tbody style="height: 100%;">
+					{loop $lists $log}
+						<tr style="">
+							<td style="">
+								{$log['date']}
+							</td>
+							<td style="">
+								{$log['version']}
+							</td>
+							<td style="">
+								{$log['name']}
+							</td>							
+							<td style="">
+								<button class="btn btn-primary" onclick="uplog.rollBack('{$log['name']}');">回滚</button>
+							</td>
+						</tr>
+					{/loop}				
+				</tbody>
+			</table>
+			<table width="100%" cellspacing="0" cellpadding="0">	
+				<tr>
+					{$pagination}
+				</tr>
+			</table>			
+		</div>
+	</div>
+<div class="hide" id="">
+	<form action="{url 'cloud/upgrades' array('pag'=>'uplog_view','act'=>'rollback')}" id="rollbackForm" style="">
+		<table class="inner-table" style="width: 400px">
+			<tbody>
+				<tr>
+					<th width="20%">
+						输入文件名：
+					</th>
+					<td>
+						<input style="width: 240px" type="text" class="input" name="name" value="">
+					</td>
+				</tr>
+			</tbody>
+		</table>
+	</form>
+</div>	
+	<script type="text/javascript">
+		$(function() {
+			
+		});
+		
+		var uplog = {
+			rollBack: function(name) {
+				$.dialog({
+					title: "请确认文件名称",
+					content: $("#rollbackForm")[0],
+					cancel: true,
+					ok: function () {
+						if($("#rollbackForm input[name=name]").val() != name){
+							WE.error('文件名不匹配', 600);
+							return false;
+						}
+						var $_form = $("#rollbackForm");
+						WE.post({
+							isCoverSuccess: true,
+							url: $_form.attr("action"),
+							data: $_form.serialize(),
+							success: function(data) {
+							console.log(data);
+								
+								if(data.result){
+									WE.success(data.text, 600);
+								}else{
+									WE.error(data.text, 600);
+								}						
+									
+								
+							}
+						});
+						return false;
+					}
+				});
+			}
+		};
+	</script>
+	
+</td>

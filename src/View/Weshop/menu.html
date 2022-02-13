@@ -1,0 +1,11 @@
+<div class="nav-tab pull-left nav-list">
+    <ul>
+        <li><a {if request()->action() =='register_view'}class="selected"{/if} href="{:url('admin/upgrades/index',array('pag'=>'register_view'));}"><span>注册</span></a></li>
+        <li><a {if request()->action() =='upgrade_view'}class="selected"{/if} href="{:url('admin/upgrades/index',array('pag'=>'upgrade_view'));}"><span>更新</span></a></li>
+        <li><a {if request()->action() =='upversion_view'}class="selected"{/if} href="{:url('admin/upgrades/index',array('pag'=>'upversion_view'));}"><span>公告</span></a></li>
+        <li><a {if request()->action() =='uplog_view'}class="selected"{/if} href="{:url('admin/upgrades/index',array('pag'=>'uplog_view'));}"><span>回滚</span></a></li>
+        <li><a {if request()->action() =='module_view'}class="selected"{/if} href="{:url('admin/upgrades/index',array('pag'=>'module_view'));}"><span>应用</span></a></li>
+        <!--<li><a {if request()->action() =='tool_view'}class="selected"{/if} href="{:url('admin/upgrades/index',array('pag'=>'tool_view'));}"><span>工具</span></a></li>-->
+        <li><a href="javascript:volid(0);"><span>帮助</span></a></li>
+    </ul>
+</div>

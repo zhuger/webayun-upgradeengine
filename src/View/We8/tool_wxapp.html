@@ -1,0 +1,230 @@
+{template 'common/header'}
+{templates 'headers'}
+<div id="contentBox"></div>
+<td id="contentTemplate" valign="top">
+	<div class="header-box clearfix">
+		<div class="logo-info pull-left"></div>
+		<div class="nav-tab pull-left nav-list">
+			<ul>
+				<li><a {if $_GPC['pag']=='register_view'}class="selected"{/if} href="{php echo url('cloud/upgrades',array('pag'=>'register_view'));}"><span>注册</span></a></li>
+				<li><a {if $_GPC['pag']=='upgrade_view'}class="selected"{/if} href="{php echo url('cloud/upgrades',array('pag'=>'upgrade_view'));}"><span>更新</span></a></li>
+				<li><a {if $_GPC['pag']=='uplog_view'}class="selected"{/if} href="{php echo url('cloud/upgrades',array('pag'=>'uplog_view'));}"><span>回滚</span></a></li>
+				<li><a {if $_GPC['pag']=='module_view'}class="selected"{/if} href="{php echo url('cloud/upgrades',array('pag'=>'module_view'));}"><span>应用</span></a></li>
+				<li><a {if $_GPC['pag']=='tool_view'}class="selected"{/if} href="{php echo url('cloud/upgrades',array('pag'=>'tool_view'));}"><span>工具</span></a></li>
+				<li><a href="javascript:volid(0);"><span>帮助</span></a></li>
+			</ul>
+		</div>
+	</div>
+	<!-- 主要内容 -->
+	<div class="main-area">
+		<!-- 标题 -->
+		<div class="title-bar">
+			<div>
+				云工具设置
+			</div>
+		</div>
+		<div class="table-tab" id="userBizTables" style="margin-bottom: 0">
+			<ul id='tabs' class="htabs">
+				<li class="table-tab--current">
+					<a id="#smg" class="selected"><span>短信平台</span></a>
+				</li>
+			</ul>
+		</div>
+		<div id="smg">
+			<form action="{url 'cloud/upgrades' array('pag'=>'tool_view','act'=>'sms_basic')}" method="post">
+				<div class="content-block">
+					<div class="content-block-title"></div>
+					<table class="inner-table edit-table">
+						<tr>
+							<th style="width: 180px;">首选通道：</th>
+							<td>
+								<select name="firstchannel" class="select" style="width:150px;padding:0 10px;">
+									<option value="0" {if empty($tool_sms['firstchannel'])}selected{/if}>默认阿里云</option>
+									{}
+									{loop $tool_sms $key $value}
+										{if $key == $firstchannel}
+											<option value="{$key}" selected>{$value['name']}</option>
+											{else}
+											<option value="{$key}">{$value['name']}</option>
+										{/if}
+									{/loop}
+								</select>
+								<span class="show-tip" data-query="weba-setting-smg-firstchannel"></span>
+							</td>
+						</tr>
+						<!--
+						<tr>
+							<th>备用通道：</th>
+							<td>
+								<select name="reserveChannel" class="select" style="width: auto;">
+									<option value="0" {if $tool_sms['reserveChannel'] == 0}selected{/if}>不启用</option>
+									{loop $tool_sms $key $value}
+										{if $key == $tool_sms['reserveChannel']}
+											<option value="{$key}" selected>{$value['name']}</option>
+											<else/>
+											<option value="{$key}">{$item}</option>
+										{/if}
+									{/loop}
+								</select>
+								<span class="show-tip" data-query="weba-setting-smg-reserveChannel"></span>
+							</td>
+						</tr>
+						-->
+					</table>
+				</div>
+				<div class="content-block">
+					<div class="content-block-title">短信通道一
+						<span class="show-tip" data-query="weba-setting-smg-smgOne"></span>
+					</div>
+					<table class="inner-table edit-table">
+						<tbody>
+						<tr>
+							<th style="width: 180px;">通道：</th>
+							<td>
+								阿里云通讯　https://dayu.aliyun.com/
+								<span class="row-title">注：为确保正常发送短信验证码，请正确填写阿里大于的短信通道信息！</span>
+							</td>
+							<input type="hidden" name="basic[aliyun][name]" value="阿里云"/>
+						</tr>
+						<tr>
+							<th>ApiId：</th>
+							<td>
+								<input type="text" name="basic[aliyun][apiid]" class="input input-long" value="{$tool_sms['aliyun']['apiid']}"/>
+							</td>
+						</tr>
+						<tr>
+							<th>密钥(ApiKey)：</th>
+							<td>
+								<input type="password" name="basic[aliyun][apikey]" class="input input-long" value="{$tool_sms['aliyun']['apikey']}"/>
+							</td>
+						</tr>
+						<tr>
+							<th>签名(Signature)：</th>
+							<td><input type="text" name="basic[aliyun][signature]" class="input input-long" value="{$tool_sms['aliyun']['signature']}"/></td>
+						</tr>
+						<tr class="textarea-row">
+							<th>模板变量设置：</th>
+							<td>
+								<textarea name="basic[aliyun][vars]" class="textarea" style="width:400px;height:90px">{$tool_sms['aliyun']['vars']}</textarea>
+								<span class="show-tip" data-query="weba-setting-smg-Smsvars"></span>
+							</td>
+						</tr>
+						<tr>
+							<th>模板ID设置[注册/绑定短]：</th>
+							<td>
+								<input type="text" name="basic[aliyun][template][register]" class="input input-long" value="{$tool_sms['aliyun']['template']['register']}"/>
+							</td>
+						</tr>
+						<tr>
+							<th>模板ID设置[找回密码]：</th>
+							<td>
+								<input type="text" name="basic[aliyun][template][find_password]" class="input input-long" value="{$tool_sms['aliyun']['template']['find_password']}"/>
+							</td>
+						</tr>
+						<tr>
+							<th>模板ID设置[账户过期]：</th>
+							<td>
+								<input type="text" name="basic[aliyun][template][user_expire]" class="input input-long" value="{$tool_sms['aliyun']['template']['user_expire']}"/>
+							</td>
+						</tr>					
+						</tbody>
+					</table>
+				</div>
+				<div class="content-block">
+					<div class="content-block-title">
+						短信通道二
+						<span class="show-tip" data-query="weba-setting-smg-smgTwo"></span>
+					</div>
+					<table class="inner-table edit-table">
+						<tbody>
+						<tr>
+							<th style="width: 180px;">通道：</th>
+							<td>
+								云之讯　http://www.ucpaas.com
+							</td>
+							<input type="hidden" name="basic[ucpaas][name]" value="云之讯"/>
+						</tr>
+						<tr>
+							<th>Account Sid：</th>
+							<td>
+								<input type="text" name="basic['ucpaas']['sid']" class="input input-long" value="{$basic[ucpaas][sid]}"/>
+							</td>
+						</tr>
+						<tr>
+							<th>Auth Token：</th>
+							<td>
+								<input type="password" name="basic[ucpaas][token]" class="input input-long" value="{$basic['ucpaas']['token']}"/>
+							</td>
+						</tr>
+						<tr>
+							<th>签名(Signature)：</th>
+							<td><input type="text" name="basic[ucpaas][signature]" class="input input-long" value="{$basic['ucpaas']['signature']}"/></td>
+						</tr>
+						</tbody>
+					</table>
+				</div>			
+				<div class="content-block">
+					<table class="inner-table edit-table">
+						<tbody>
+						<tr>
+							<th></th>
+							<td>
+								<input type="button" value="保存设置" class="btn btn-primary submit ajax-submit" />
+							</td>
+						</tr>
+						</tbody>
+					</table>
+				</div>
+
+			</form>
+		</div>
+
+		
+	</div>
+</td>
+<script>
+	$.fn.tab = function (options) {
+		var options = $.extend({}, $.fn.tab.defaults, options);
+		return this.each(function () {
+			var that = $(this);
+			var id = that.attr("id");
+			that.find("li").bind("click", function () {
+				var a = $(this).find("a");
+				var a_id = a.attr("id");
+				$.cookie(options.id + "_tabs_" + id, a_id);
+				that.find("a").each(function () {
+
+					if ($(this).attr("id") != a_id) {
+
+						$(this).parent().removeClass("table-tab--current");
+						$($(this).attr("id")).hide();
+
+					} else {
+
+						$(this).parent().addClass("table-tab--current");
+						$($(this).attr("id")).show();
+					}
+				});
+			});
+			/*
+			if (options.cookie) {
+
+				var urlAddress = location.href;
+				var tab = $.url(urlAddress).param('tab');
+				var name = $.url(urlAddress).param('name');
+				if (tab) {
+					$("#" + id).find("[id='#" + tab + "']").click();
+					$("input[name=" + name + "]")[0].focus();
+				} else {
+					var cookie_id = $.cookie(options.id + "_tabs_" + id);
+					if (cookie_id) {
+						$("#" + id).find("[id='" + cookie_id + "']").click();
+					}
+				}
+
+
+			}
+			*/
+		});
+	};
+</script>

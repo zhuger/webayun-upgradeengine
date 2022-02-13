@@ -1,0 +1,326 @@
+{extend name="upgrades/headers"/}
+{block name='main'}
+<table cellspacing="0" cellpadding="0" style="width:98%;">
+<div id="contentBox"></div>
+<td id="contentTemplate" valign="top">
+	<div class="header-box clearfix">
+		<div class="logo-info pull-left"></div>
+		{include file="upgrades/menu" /}
+	</div>
+	<div class="main-area">
+		<div class="title-bar">
+			<div>
+				云应用管理
+			</div>
+		</div>
+		<div class="warm-tip">
+			温馨提醒：收费应用需独立授权
+		</div>
+		<div class="search-box operates-container clearfix">
+			<form action="{:url('admin/upgrades/index',['pag'=>'modules_view'])}" method="get" id="search_form">
+				搜索条件：
+				<select class="select" name="searchType">
+					<option value="title"{if request()->searchType == 'title'} selected{/if}>名称</option>
+					<option value="name"{if request()->searchType == 'name'} selected{/if}>标识</option>
+				</select>
+				<input name="keyword" type="text" class="input defaultinput" value="{:request()->keyword}" _value="关键词" placeholder="关键词"/>
+				<input type="button" value="查询" class="btn btn-primary" onclick="pagination_page(1)" />
+				<input type="hidden" name="pag" value="module_view" />
+				{$hiddenParams|raw}
+			</form>
+			<button class="btn btn-primary btn-updatecache" onclick="module.cacheUp();">更新缓存</button>
+		</div>
+		<table width="100%" border="0" cellspacing="0" cellpadding="0"
+			   class="main-table main-table-stripe">
+			<thead>
+			<tr class="table-title" bgcolor="#f0f4f7">
+				<th style="text-align: left; width: 25%;">应用名称</th>
+				<th style="text-align: left; width: 25%;">应用类目</th>
+				<th style="text-align: left; width: 10%;">本地版本</th>
+				<th style="text-align: left; width: 10%;">云端版本</th>
+				<th style="text-align: left; width: 10%;">收费标准</th>
+				<th style="text-align: left; width: 20%;">相关操作</th>
+			</tr>
+			</thead>
+			<tbody style="height: 100%;">
+			{foreach $lists as $module_k => $module_v}
+					<tr style="">
+						<td style="">
+							{$module_v['title']}
+						</td>
+						<td style="">
+							{$module_v['cate_title']}
+						</td>
+						<td style="">
+							{$module_v['version_local']}
+						</td>
+						<td style="">
+							{$module_v['version_cloud']|raw}
+						</td>
+						<td style="">
+							{$module_v['price']}
+						</td>
+						<td style="">
+							<button class="btn btn-primary" style="color:#ffffff;" onclick="module.actionAuth('{$module_k}');">授权</button>
+							{$module_v['button'] |raw}
+						</td>
+					</tr>
+				{/foreach}
+			</tbody>
+		</table>
+		<table width="100%" cellspacing="0" cellpadding="0">
+			<tr>
+				{$pagination|raw}
+			</tr>
+		</table>
+	</div>
+	<div class="hide" id="">
+		<form action="{:url('admin/upgrades/index',['pag'=>'modules_view','act'=>'register'])}" id="registerForm" style="">
+			<table class="inner-table edit-table" style="width: 600px">
+				<tr>
+					<th style="width: 120px;">站点信息：</th>
+					<td><input type="hidden" id="appid" name="app" value=""/><input type="text" class="input input-xlong error-tip" id="result" autocomplete="off" value="" placeholder="授权后显示" readonly="readonly" /><span class="show-tip requiring" data-query="weba-register-domain"></span></td>
+				</tr>
+				<tr>
+					<th>授权码：</th>
+					<td><input type="text" class="input input-xlong" id="token" name="token" autocomplete="off" value="" placeholder="免费则无需填写"/><span class="show-tip requiring" data-query="weba-register-token"></span></td>
+				</tr>
+				<tr>
+					<th>充值码：</th>
+					<td><input type="text" class="input input-xlong" id="card" name="card" autocomplete="off" value="" placeholder="选填"/><span class="show-tip requiring" data-query="weba-register-card"></span></td>
+				</tr>
+				<input type="hidden" id="domain" name="domain" value=""/>
+				<input type="hidden" id="is_https" name="is_https" value=""/>
+				<input type="hidden" id="ip" name="ip" value=""/>
+				<input type="hidden" id="email" name="email" value=""/>
+			</table>
+		</form>
+	</div>
+</td>
+</table>
+{/block}
+{block name="script"}
+<script type="text/javascript">
+	$(function() {
+
+	});
+
+	var module = {
+		cacheUp:function() {
+			WE.post({
+				url: "{:url('admin/upgrades/index',['pag'=>'module_view','act'=>'cache_check'])}",
+				success: function(data) {
+					if(data.result) {
+						window.location.reload();
+						return false;
+					}
+				}
+			});
+		},
+		checkAuthFrame: function() {
+			WE.post({
+				isCoverSuccess: true,
+				url: "{:url('admin/upgrades/index',['pag'=>'module_view','act'=>'frame_check'])}",
+				success: function(data) {
+					if(data.result == false) {
+						//window.location.href = "{url 'cloud/upgrades' array('pag'=>'register_view')}";
+						window.location.href = "{:url('cloud/upgrades/index',['pag'=>'register_view'])}";
+						return false;
+					}else{
+
+					}
+				}
+			});
+		},
+		checkAuth: function(appid) {
+			WE.post({
+				isCoverSuccess: true,
+				url: "{:url('admin/upgrades/index',['pag'=>'modules_view','act'=>'auth_check'])}&app="+appid,
+				success: function(data) {
+					//console.log(data);
+					if(data.result == false) {
+						WE.error(data.text, 600);
+						return false;
+					}else{
+						return true;
+					}
+				},
+				error: function() {
+					WE.error('网络错误', 600);
+				}
+			});
+		},
+		actionUp: function(appid) {
+			module.checkAuthFrame();
+			//module.checkAuth(appid);
+			WE.post({
+				isCoverSuccess: true,
+				url: "{:url('admin/upgrades/index',['pag'=>'modules_view','act'=>'auth_check'])}&app="+appid,
+				success: function(data) {
+					console.log(data);
+					if(data.result == false) {
+						WE.error(data.text, 600);
+						return false;
+					}else{
+						window.location.href = "{:url('admin/upgrades/index',['pag'=>'modules_view'])}&app="+appid;
+					}
+				},
+				error: function() {
+					WE.error('网络错误', 600);
+				}
+			});
+		},
+		actionBack: function(appid) {
+			module.checkAuthFrame();
+			//module.checkAuth(appid);
+			WE.post({
+				isCoverSuccess: true,
+				url: "{:url('admin/upgrades/index',['pag'=>'modules_view','act'=>'auth_check'])}&app="+appid,
+				success: function(data) {
+					console.log(data);
+					if(data.result == false) {
+						WE.error(data.text, 600);
+						return false;
+					}else{
+						window.location.href = "{:url('admin/upgrades/index',['pag'=>'modules_view','act'=>'uplog_modules'])}&app="+appid;
+					}
+				},
+				error: function() {
+					WE.error('网络错误', 600);
+				}
+			});
+		},
+		checkAuth2: function(appid) {
+
+			WE.post({
+				isCoverSuccess: true,
+				url: "{:url('admin/upgrades/index',['pag'=>'modules_view','act'=>'auth_check'])}&app="+appid,
+				success: function(data) {
+					$('#appid').val(appid);
+					if(data.result) {
+						//检测成功，赋值服务端返回应用数据
+						$("#result").val(data.data.result);
+						$('#domain').val(data.data.domain);
+						$('#ip').val(data.data.ip);
+						$('#is_https').val(data.data.is_https);
+						$('#email').val(data.data.email);
+						//if(data.data.is_https){
+						//	$("input[name='is_https']").val(1);
+						//}else{
+						//	$("input[name='is_https']").val(0);
+						//}
+
+					}else{
+						//检测失败，赋值框架授权数据
+						$('#domain').val(data.data.domain);
+						$('#ip').val(data.data.ip);
+						$('#is_https').val(data.data.is_https);
+						$('#email').val(data.data.email);
+						//$('#domain').val('');
+						//$('#ip').val('');
+						//$("input[name='is_https']").eq(1).attr("checked","checked");
+						//$('#email').val('');
+						//$('#token').val('');
+					}
+				},
+				error: function() {
+					WE.error('网络错误', 600);
+				}
+			});
+		},
+		actionAuth: function(appid) {
+		module.checkAuth2(appid);
+		/*
+		var domain = $('#domain').val().replace(/[ ]/g,"");
+		var ip = $('#ip').val().replace(/[ ]/g,"");
+		var is_https = $("input[name='is_https']:checked").val();
+		var email = $('#email').val().replace(/[ ]/g,"");
+		var token = $('#token').val().replace(/[ ]/g,"");
+		var card = $('#card').val().replace(/[ ]/g,"");
+		var appid = $('#appid').val().replace(/[ ]/g,"");
+		var data = {domain:domain, ip:ip, is_https:is_https, email:email, token:token, card:card};
+		$("#registerBtn").attr('disabled', true).html('提交中');
+		module.actionCheck_init(data,appid);
+		*/
+		$.dialog({
+			title: "注册模块站点",
+			content: $("#registerForm")[0],
+			cancel: true,
+			ok: function () {
+				var $_form = $("#registerForm");
+				if($('#domain').val() =='' || $('#domain').val() == null){
+					return WE.error('域名不能为空!', 600);
+				}
+				if($('#ip').val() =='' || $('#ip').val() == null){
+					return WE.error('IP不能为空!', 600);
+				}
+				if($('#token').val() =='' || $('#token').val() == null){
+					return WE.error('授权码不能为空!', 600);
+				}
+				WE.post({
+					isCoverSuccess: true,
+					url: $_form.attr("action")+"&app="+appid,
+					data: $_form.serialize(),
+					success: function(data) {
+						if(data.result){
+							WE.success(data.text, 600);
+						}else{
+							WE.error(data.text, 600);
+						}
+
+
+					}
+				});
+				return false;
+			}
+		});
+		},
+		actionCheck_init: function(objdata,appid) {
+			WE.post({
+				isCoverSuccess: true,
+				url: "{:url('admin/upgrades/index',['pag'=>'register_view','act'=>'register'])}&app="+appid,
+				data: objdata,
+				success: function(data) {
+					if(data.result) {
+						if(data.data.result){
+							$("#result").val(data.data.result);
+						}
+						if(data.data.notice){
+							$("#notice").val(data.data.notice);
+						}
+
+					}
+					$("#registerBtn").removeAttr('disabled').html('确认注册');
+				}
+			});
+		},
+		actionCheck: function(objdata,appid) {
+			WE.post({
+				isCoverSuccess: true,
+				url: "{:url('admin/upgrades/index',['pag'=>'register_view','act'=>'register'])}&app="+appid,
+				data: objdata,
+				success: function(data) {
+					if(data.result) {
+						if(data.data.result){
+							$("#result").val(data.data.result);
+						}
+						if(data.data.notice){
+							$("#notice").val(data.data.notice);
+						}
+						WE.success(data.text, 600);
+						$("#registerBtn").removeAttr('disabled').html('确认注册');
+					}else {
+						WE.error(data.text, 600);
+						$("#registerBtn").removeAttr('disabled').html('确认注册');
+					}
+				},
+				error: function() {
+
+					WE.error('操作失败,请重试!', 600);
+					$("#registerBtn").removeAttr('disabled').html('确认注册');
+				}
+			});
+		}
+	};
+</script>
+{/block}
