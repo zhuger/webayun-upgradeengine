@@ -90,7 +90,7 @@ class UpgradeService
     //通讯token缓存到期时间
 	public $cache_time = "600";
     //当前系统判断
-    private $sysTpye = '';
+    private $appName = '';
     //客户端提交数据
     public $apphash = array(
         'host' => '',
@@ -203,11 +203,11 @@ class UpgradeService
 		$this->sqlStatementGenerate = new SqlStatementGenerate();
 
         //判断系统授权接口文件
-        $this->sysTpye = $configs['sysTpye'];
+        $this->appName = $configs['appName'];
 
-        if($this->sysTpye=="WE8"){
+        if($this->appName=="weengine"){
             $dirName = "data";
-        }elseif($this->sysTpye=="WESHOP"){
+        }elseif($this->appName=="weshop"){
             $dirName = "config";
         }else{
             $dirName = "config";
@@ -710,9 +710,9 @@ class UpgradeService
 		$session_data['expire'] = time()+$expiretime;
 		$session_data['api_url'] = $api_url;
 		$name = $this->access_token_name;
-        if($this->sysTpye=="WE8"){
+        if($this->appName=="weengine"){
             $_SESSION[$name] = $session_data;
-        }elseif($this->sysTpye=="WESHOP"){
+        }elseif($this->appName=="weshop"){
             session($name,$session_data);
         }else{
             $_SESSION[$name] = $session_data;
@@ -723,9 +723,9 @@ class UpgradeService
 	public function get_access_token()
 	{
 		$name = $this->access_token_name;
-        if($this->sysTpye=="WE8"){
+        if($this->appName=="weengine"){
             $access = $_SESSION[$name];
-        }elseif($this->sysTpye=="WESHOP"){
+        }elseif($this->appName=="weshop"){
             $access = session($this->access_token_name);
         }else{
             $access = $_SESSION[$name];
@@ -741,9 +741,9 @@ class UpgradeService
 	}
 	public function clear_access_token($name)
 	{
-        if($this->sysTpye=="WE8"){
+        if($this->appName=="weengine"){
             unset($_SESSION[$name]);
-        }elseif($this->sysTpye=="WESHOP"){
+        }elseif($this->appName=="weshop"){
             session($name,null);
         }else{
             unset($_SESSION[$name]);
