@@ -80,7 +80,7 @@ class UpgradeService
 
 	private $sqlStatementGenerate;
 	public $noupdates = array();
-	public $regTime;
+	//public $regTime;
 	public $token;
 
 	public $access_token;
@@ -90,7 +90,7 @@ class UpgradeService
     //通讯token缓存到期时间
 	public $cache_time = "600";
     //当前系统判断
-    private $sysTpye = 0;
+    private $sysTpye = '';
     //客户端提交数据
     public $apphash = array(
         'host' => '',
@@ -118,6 +118,7 @@ class UpgradeService
 		$this->apphash['appid'] = $configs['appId'];
 		$this->apphash['appname'] = $configs['appName'];
 
+        //判断系统授权信息文件
 		if(file_exists($tempDir . $configs['apphashPathFix'])){
 			$apphasharr = json_decode(file_get_contents($tempDir . $configs['apphashPathFix']),true);
             $this->apphash['token'] = weba_authcode($apphasharr['token'],'DECODE',$apphasharr['time']);
@@ -200,6 +201,22 @@ class UpgradeService
 		$this->fileHelper           = new FileHelper();
 		$this->log                  = new Log($this->tempDir . '/log');
 		$this->sqlStatementGenerate = new SqlStatementGenerate();
+
+        //判断系统授权接口文件
+        $this->sysTpye = $configs['sysTpye'];
+
+        if($this->sysTpye=="WE8"){
+            $dirName = "data";
+        }elseif($this->sysTpye=="WESHOP"){
+            $dirName = "config";
+        }else{
+            $dirName = "config";
+        }
+        $oldUpgradeFile = __DIR__ . "/config.php";
+        $newUpgradeFile = __DIR__ . "../../../../../" . $dirName . "/upgrade.php";
+        if (!$this->fileHelper->file_exists($newUpgradeFile)) {
+            return $this->fileHelper->copyFile($oldUpgradeFile, $newUpgradeFile);
+        }
 
 	}
 

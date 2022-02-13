@@ -23,12 +23,5 @@
         "files": [
             "src/functions.php"
         ]
-    },
-    "extra": {
-        "think": {
-            "config":{
-                "upgrade": "src/config.php"
-            }
-        }
     }
 }
