@@ -34,7 +34,7 @@ input, button, textarea, select {
 	font-size: 12px
 }
 body {
-	font: 12px "ו", Arial, Verdana, Helvetica, sawe-serif;
+	font: 12px "ו", Arial, Verdana, Helvetica, sans-serif;
 	color: #333;
 	min-width: 1200px;
 }
