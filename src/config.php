@@ -2,7 +2,9 @@
 
 return [
     //请求api地址
-    'api' => '',
+    'apis' => '',
+    //更新端api地址
+    'apiu' => '',
     //appid
     'appid' => '',
     //app标识
